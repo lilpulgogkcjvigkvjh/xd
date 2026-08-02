@@ -1,20 +1,19 @@
-FROM node:20-slim
+FROM ubuntu:22.04
 
-# Instalar dependencias esenciales
+# Instalar dependencias base de Linux y curl
 RUN apt-get update && apt-get install -y \
     curl \
-    git \
     ca-certificates \
+    git \
     && rm -rf /var/lib/apt/lists/*
+
+# Instalar la CLI de Foundry Local desde su repositorio u origen oficial
+# (Sustituye la URL por la URL del instalador/binario Linux de Foundry que utilices)
+RUN curl -fsSL https://raw.githubusercontent.com/microsoft/foundry-local/main/install.sh | bash || true
 
 WORKDIR /app
 
-# Instalar Foundry localmente en el directorio de trabajo para evitar fallos de rutas globales
-RUN npm install @foundry/cli || npm install foundry
-
-# Asegurar que Railway exponga el puerto correctamente
 ENV PORT=8080
 EXPOSE 8080
 
-# Usamos npx para invocar el binario directamente dentro de node_modules
-CMD ["npx", "foundry", "run", "qwen3.5-0.8b"]
+CMD ["foundry", "run", "qwen3.5-0.8b"]
