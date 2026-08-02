@@ -1,19 +1,20 @@
 FROM ubuntu:22.04
 
-# 1. Instalar paquetes esenciales del sistema
+# 1. Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     curl \
     tar \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Descargar, extraer dinámicamente y mover los binarios
+# 2. Descargar, extraer y enlazar el ejecutable automáticamente
 RUN curl -fsSL https://github.com/microsoft/foundry-local/releases/download/cli-preview-0.10.0/foundry-0.10.0-linux-x64.tar.gz -o foundry.tar.gz \
-    && mkdir -p /tmp/foundry \
-    && tar -xzf foundry.tar.gz -C /tmp/foundry \
-    && cp -r /tmp/foundry/* /usr/local/bin/ \
-    && rm -rf foundry.tar.gz /tmp/foundry \
-    && chmod +x /usr/local/bin/*
+    && mkdir -p /opt/foundry \
+    && tar -xzf foundry.tar.gz -C /opt/foundry \
+    && EXECUTABLE=$(find /opt/foundry -name "foundry" -type f) \
+    && chmod +x "$EXECUTABLE" \
+    && ln -s "$EXECUTABLE" /usr/local/bin/foundry \
+    && rm foundry.tar.gz
 
 WORKDIR /app
 
