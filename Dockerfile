@@ -1,21 +1,20 @@
 FROM node:20-slim
 
-# Instalar dependencias del sistema requeridas por instaladores/CLI
+# Instalar dependencias esenciales
 RUN apt-get update && apt-get install -y \
     curl \
     git \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Si Foundry usa su script oficial de instalación (p. ej. via curl):
-# RUN curl -fsSL https://... | sh
-
-# Si Foundry es un paquete Node oficial (asegúrate de usar el scope o paquete correcto):
-RUN npm install -g @palantir/foundry-cli || npm install -g foundry
-
 WORKDIR /app
 
-# Aseguramos el PATH global de npm en caso de que no esté mapeado
-ENV PATH="${PATH}:/usr/local/lib/node_modules/.bin"
+# Instalar Foundry localmente en el directorio de trabajo para evitar fallos de rutas globales
+RUN npm install @foundry/cli || npm install foundry
 
-CMD ["foundry", "run", "qwen3.5-0.8b"]
+# Asegurar que Railway exponga el puerto correctamente
+ENV PORT=8080
+EXPOSE 8080
+
+# Usamos npx para invocar el binario directamente dentro de node_modules
+CMD ["npx", "foundry", "run", "qwen3.5-0.8b"]
