@@ -1,19 +1,20 @@
-FROM ubuntu:22.04
+FROM python:3.11-slim
 
-# Instalar dependencias base de Linux y curl
+# 1. Instalar dependencias del sistema necesarias
 RUN apt-get update && apt-get install -y \
     curl \
-    ca-certificates \
     git \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar la CLI de Foundry Local desde su repositorio u origen oficial
-# (Sustituye la URL por la URL del instalador/binario Linux de Foundry que utilices)
-RUN curl -fsSL https://raw.githubusercontent.com/microsoft/foundry-local/main/install.sh | bash || true
+# 2. Instalar el SDK oficial de Python de Foundry Local
+RUN pip install --no-cache-dir foundry-local-sdk
 
 WORKDIR /app
 
+# 3. Railway asigna dinámicamente un puerto en la variable PORT
 ENV PORT=8080
 EXPOSE 8080
 
+# 4. Ejecutar el modelo con el CLI de Foundry Local
 CMD ["foundry", "run", "qwen3.5-0.8b"]
