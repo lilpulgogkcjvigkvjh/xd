@@ -7,17 +7,17 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Descargar e instalar el binario oficial de Foundry Local CLI 0.10.0
+# 2. Descargar, extraer dinámicamente y mover los binarios
 RUN curl -fsSL https://github.com/microsoft/foundry-local/releases/download/cli-preview-0.10.0/foundry-0.10.0-linux-x64.tar.gz -o foundry.tar.gz \
-    && tar -xzf foundry.tar.gz -C /usr/local/bin \
-    && rm foundry.tar.gz \
-    && chmod +x /usr/local/bin/foundry
+    && mkdir -p /tmp/foundry \
+    && tar -xzf foundry.tar.gz -C /tmp/foundry \
+    && cp -r /tmp/foundry/* /usr/local/bin/ \
+    && rm -rf foundry.tar.gz /tmp/foundry \
+    && chmod +x /usr/local/bin/*
 
 WORKDIR /app
 
-# 3. Configurar variables de entorno para Railway
 ENV PORT=8080
 EXPOSE 8080
 
-# 4. Iniciar el servicio con el modelo deseado
 CMD ["foundry", "run", "qwen3.5-0.8b"]
