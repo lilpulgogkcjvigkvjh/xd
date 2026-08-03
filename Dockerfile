@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CI=true
 
-# 1. Instalar dependencias del sistema requeridas por el motor de Microsoft (.NET Runtime)
+# 1. Instalar dependencias del sistema y socat para el reenvío de red
 RUN apt-get update && apt-get install -y \
     curl \
     tar \
@@ -13,9 +13,10 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     libgcc-s1 \
     libstdc++6 \
+    socat \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Descargar e instalar Foundry Local
+# 2. Descargar e instalar Foundry Local CLI
 RUN mkdir -p /opt/foundry \
     && curl -fsSL https://github.com/microsoft/foundry-local/releases/download/cli-preview-0.10.0/foundry-0.10.0-linux-x64.tar.gz -o foundry.tar.gz \
     && tar -xzf foundry.tar.gz -C /opt/foundry \
@@ -29,5 +30,5 @@ WORKDIR /app
 ENV PORT=8080
 EXPOSE 8080
 
-# 3. Descargar el modelo e iniciar el daemon de API expuesto en 0.0.0.0:$PORT
-CMD ["sh", "-c", "foundry model download qwen3.5-0.8b && DAEMON=$(find /opt/foundry -type f -name 'foundrylocald' | head -n 1) && export ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080} && exec $DAEMON --host 0.0.0.0 --port ${PORT:-8080}"]
+# 3. Descargar el modelo, iniciar el daemon en el puerto interno 3000 y mapear con socat al $PORT de Railway
+CMD ["sh", "-c", "foundry model download qwen3.5-0.8b && DAEMON=$(find /opt/foundry -type f -name 'foundrylocald' | head -n 1) && $DAEMON -p 3000 & socat TCP-LISTEN:${PORT:-8080},fork,reuseaddr TCP:127.0.0.1:3000"]
