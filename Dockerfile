@@ -26,9 +26,10 @@ RUN mkdir -p /opt/foundry \
     && rm foundry.tar.gz
 
 WORKDIR /app
+COPY start.sh /app/start.sh
 
 ENV PORT=8080
 EXPOSE 8080
 
 # 3. Descargar el modelo, iniciar el daemon en el puerto interno 3000 y mapear con socat al $PORT de Railway
-CMD ["sh", "-c", "foundry model download qwen3.5-0.8b && DAEMON=$(find /opt/foundry -type f -name 'foundrylocald' | head -n 1) && $DAEMON -p 3000 & socat TCP-LISTEN:${PORT:-8080},fork,reuseaddr TCP:127.0.0.1:3000"]
+CMD ["/app/start.sh"]
